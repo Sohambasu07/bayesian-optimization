@@ -5,13 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 
 from bayesian_optimization.constants import PLOTS_DIR
 
 if TYPE_CHECKING:
-    pass
+    import numpy as np
 
 sns.set_style("whitegrid")
 sns.set_context("paper")
@@ -52,8 +51,8 @@ def plot_gp(
         label="Observed Data Points",
     )
     ax.set_title("Gaussian Process Posterior")
-    ax.set_xlabel("Input")
-    ax.set_ylabel("Output")
+    ax.set_xlabel("x")
+    ax.set_ylabel("f(x)")
     ax.legend()
 
 
@@ -76,7 +75,7 @@ def plot_acquisition(
         label="Acquisition Function"
     )
     ax.set_title("Acquisition Function")
-    ax.set_xlabel("Input")
+    ax.set_xlabel("x")
     ax.set_ylabel("Acquisition Value")
     ax.legend()
 
@@ -115,7 +114,7 @@ def plot_bo_iteration(
     )
 
     figure.tight_layout()
-    figure.suptitle(f"Bayesian Optimization Iteration {len(y)}")
+    figure.suptitle(f"Bayesian Optimization Iteration {len(y)}", y=1.05)
 
     plot_path = PLOTS_DIR / f"bo_iteration_{len(y)}.png"
     plot_path.parent.mkdir(parents=True, exist_ok=True)
