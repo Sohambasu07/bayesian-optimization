@@ -36,8 +36,8 @@ def plot_gp(
     ax.plot(samples, gp_mean, label="GP Mean")
     ax.fill_between(
         samples,
-        gp_mean - gp_std,
-        gp_mean + gp_std,
+        gp_mean - 1.96 * gp_std,
+        gp_mean + 1.96 * gp_std,
         alpha=0.2,
         color="blue",
         label="95% Confidence Interval",
