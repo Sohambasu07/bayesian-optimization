@@ -9,6 +9,9 @@ python -m bayesian_optimization \
     --epochs 20 \ #Optional
 ```
 
+> [!TIP]
+> Use the default settings (without any optional arguments) to reproduce saved results
+
 ### Installation from source
 
 ```bash
