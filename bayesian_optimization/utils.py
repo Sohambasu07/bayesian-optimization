@@ -97,30 +97,16 @@ def get_all_trials_as_arrays(
 
 @dataclass
 class Average:
-    """Class to compute and store the average of a series of values."""
+    """Class to compute sum and average."""
 
     sum: float = field(default=0.0, init=False)
-    """Sum of the values."""
+    """Sum of some values."""
 
     count: int = field(default=0, init=False)
     """Number of values."""
 
-    def __post_init__(self):
-        self.sum = 0.0
-        self.count = 0
-
-    @property
-    def _len(self) -> int:
-        """Get the number of stored values.
-
-        Returns:
-            The number of values.
-        """
-        return len(self.values)
-
-
     def update(self, value: float, n: int = 1) -> None:  # noqa: D417
-        """Update the list of values with a new value.
+        """Update the sum and count.
 
         Args:
             value: The new value to add.
@@ -130,7 +116,7 @@ class Average:
 
     @property
     def avg(self) -> float:
-        """Compute the average of the stored values.
+        """Compute the average.
 
         Returns:
             The average of the values.
@@ -143,7 +129,7 @@ class Average:
 def accuracy(
     logits: torch.Tensor,
     labels: torch.Tensor,
-) -> float:
+) -> torch.Tensor:
     """Compute the accuracy of predictions.
 
     Args:
