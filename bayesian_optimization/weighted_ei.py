@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy.stats import norm
 
+from bayesian_optimization.plotting import plot_bo_iteration
+
 if TYPE_CHECKING:
-    from ConfigSpace import Configuration
 
     from bayesian_optimization.gp import GPModel
 
@@ -59,6 +60,7 @@ class WeightedExpectedImprovement:
         self,
         x: np.ndarray,
         y: np.ndarray,
+        bounds: np.ndarray,
         seed: int = 0,
         n_random: int = 10000,
     ) -> np.ndarray:
@@ -67,6 +69,8 @@ class WeightedExpectedImprovement:
         Args:
             x: Points where the acquisition function should be evaluated.
             y: Observed objective values corresponding to points X.
+            bounds: ndarray of shape (2, ndims) representing the lower and upper bounds
+                for each dimension.
             seed: Random seed for reproducibility.
             n_random: Number of random samples to evaluate the acquisition function on.
 
@@ -74,21 +78,21 @@ class WeightedExpectedImprovement:
             The point that maximizes the acquisition function.
         """
         self.gp.model.fit(
-            x=x,
+            X=x,
             y=y,
         )
 
         self.gp.space.seed(seed)
 
-        random_samples: list[Configuration] = self.gp.space.sample_configuration(
-            n_samples=n_random
+        # For better coverage of the whole space,
+        # Easy since our search space is 1D
+        samples = np.linspace(
+            bounds[0],
+            bounds[1],
+            n_random
         )
 
-        random_samples: np.ndarray = np.array(
-            [sample.get_array() for sample in random_samples]
-        )
-
-        mu, sigma = self.gp.model.predict(random_samples, return_std=True)
+        mu, sigma = self.gp.model.predict(samples.reshape(-1, 1), return_std=True)
         y_best = np.min(y)
 
         acq_values = self.weighted_ei(
@@ -99,4 +103,13 @@ class WeightedExpectedImprovement:
 
         next_idx = np.argmax(acq_values)
 
-        return random_samples[next_idx]
+        plot_bo_iteration(
+            x=x,
+            y=y,
+            samples=samples,
+            gp_mean=mu,
+            gp_std=sigma,
+            acq_fn_values=acq_values,
+        )
+
+        return samples[next_idx]
