@@ -18,7 +18,6 @@ def get_resnet_config_space(seed: int = 0) -> ConfigurationSpace:
             lower=1e-5,
             upper=1e-1,
             log=True,
-            default_value=1e-3,
         ),
     )
 
