@@ -14,6 +14,7 @@ dependencies = [
     "ConfigSpace",
     "pyyaml",
     "seaborn",
+    "torchsummary",
     ]
 authors = [
     { name = "Soham Basu", email = "soham.basu07@gmail.com" },
