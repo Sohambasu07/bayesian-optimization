@@ -13,6 +13,7 @@ import torch
 import torchsummary as summary
 import yaml
 from torchvision.datasets import FashionMNIST
+from torchvision.transforms import ToTensor
 
 from bayesian_optimization.bayesian_optimization import BayesianOptimization
 from bayesian_optimization.constants import DATA_DIR, RESULTS_DIR
@@ -54,7 +55,7 @@ class AutoML:
             root=DATA_DIR,
             train=True,
             download=True,
-            transform=None,
+            transform=ToTensor(),
         )
         num_classes = 10
 
@@ -79,9 +80,9 @@ class AutoML:
         num_restarts: int = 20,
     ) -> None:
         """Run Bayesian Optimization to find the best hyperparameters."""
-        config_space = get_resnet_config_space()
+        config_space = get_resnet_config_space(seed=seed)
 
-        (train_dataset, val_dataset), num_classes = self._download_and_prepare_data()
+        (train_dataset, val_dataset), num_classes = self._download_and_prepare_data(seed=seed)
 
         bo = BayesianOptimization(
             config_space=config_space,
@@ -99,9 +100,7 @@ class AutoML:
             ),
         )
 
-        trials: list[Trial] = bo(
-            seed=seed,
-        )
+        trials: list[Trial] = bo(seed=seed)
 
         _df = pd.DataFrame(
             [
@@ -139,6 +138,8 @@ def train_and_evaluate_model(
     batch_size: int = 64,
     device: Literal["cpu", "cuda"] = "cpu",
     seed: int = 0,
+    *,
+    show_summary: bool = False,
 ) -> dict[str, float]:
     """Train the Resnet model using the prepared dataset.
 
@@ -150,7 +151,9 @@ def train_and_evaluate_model(
         batch_size: Batch size for training and evaluation.
         device: The device (CPU/GPU) to run the training on.
         seed: Random seed for reproducibility.
+        show_summary: Whether to display the model summary.
     """
+    torch.manual_seed(seed)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True
     )
@@ -164,8 +167,15 @@ def train_and_evaluate_model(
         warnings.warn("CUDA is not available. Falling back to CPU.", stacklevel=2)
         device = torch.device("cpu")
 
-    model = ResNetSmall(num_classes=num_classes).to(device)
-    summary.summary(model, (1, 3, 32, 32), batch_size=1, device=str(device))
+    input_shape = (1, 32, 32)
+
+    model = ResNetSmall(
+        num_classes=num_classes,
+        input_shape=input_shape
+    ).to(device)
+
+    if show_summary:
+        summary.summary(model, input_shape, batch_size=1, device=str(device))
     criterion = torch.nn.CrossEntropyLoss()
 
     lr = hp_configs["learning_rate"]
@@ -173,12 +183,9 @@ def train_and_evaluate_model(
         model.parameters(),
         lr=lr,
         momentum=0.9,
-        weight_decay=5e-4,
     )
 
     total_time = 0.0
-
-    torch.manual_seed(seed)
 
     for _ in range(10):
 
@@ -199,6 +206,12 @@ def train_and_evaluate_model(
 
         total_time += train_time + val_time
 
+
+    automl_logger.info(
+        f"Validation Accuracy: {val_accuracy:.4f}, "
+        f"Validation Loss: {val_loss:.4f}, "
+        f"Total Time: {total_time:.2f} seconds"
+    )
 
     return {
         "val_accuracy": -val_accuracy,
