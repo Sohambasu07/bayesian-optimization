@@ -27,11 +27,12 @@ def plot_gp(
 
     Args:
         ax: Matplotlib Axes object to plot on.
-        x: Input points where the GP is evaluated.
-        y: Observed objective values at the input points.
-        samples: Input points where the GP is evaluated.
-        gp_mean: Predicted means at the input points.
-        gp_std: Predicted standard deviations at the input points.
+        x: Input points where the GP has been fitted.
+        y: Observed objective values at the fitted input points.
+        samples: Samples where the GP is evaluated for obtaining
+            the posterior and acquisition values.
+        gp_mean: Predicted means at the samples.
+        gp_std: Predicted standard deviations at the samples.
     """
     ax.plot(samples, gp_mean, label="GP Mean")
     ax.fill_between(
@@ -65,8 +66,9 @@ def plot_acquisition(
 
     Args:
         ax: Matplotlib Axes object to plot on.
-        samples: Input points where the acquisition function is evaluated.
-        acq_fn_values: Acquisition function values at the input points.
+        samples: Samples where the GP is evaluated for obtaining
+            the posterior and acquisition values.
+        acq_fn_values: Acquisition function values at the samples.
     """
     ax.plot(
         samples,
@@ -91,12 +93,13 @@ def plot_bo_iteration(
     """Plot the Gaussian Process and Acquisition Function for a single BO iteration.
 
     Args:
-        x: Input points where the GP is evaluated.
-        y: Observed objective values at the input points.
-        samples: Input points where the GP and acquisition function are evaluated.
-        gp_mean: Predicted means from the GP at the input points.
-        gp_std: Predicted standard deviations from the GP at the input points.
-        acq_fn_values: Acquisition function values at the input points.
+        x: Input points where the GP has been fitted.
+        y: Observed objective values at the fitted input points.
+        samples: Samples where the GP is evaluated for obtaining
+            the posterior and acquisition values.
+        gp_mean: Predicted means from the GP at the samples.
+        gp_std: Predicted standard deviations from the GP at the samples.
+        acq_fn_values: Acquisition function values at the samples.
     """
     figure, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
     x=x.flatten()
