@@ -5,9 +5,12 @@ from a Sobol sequence.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-import numpy as np
 from scipy.stats import qmc
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 @dataclass
@@ -35,6 +38,6 @@ class InitialDesign:
             ndarray of shape (n, ndims) containing the sampled points.
         """
         sampler = qmc.Sobol(d=self.ndims, seed=seed)
-        samples = sampler.random_base2(m=int(np.ceil(np.log2(n))))
+        samples = sampler.random(n=n)
         return qmc.scale(samples, l_bounds = bounds[0], u_bounds = bounds[1])
 

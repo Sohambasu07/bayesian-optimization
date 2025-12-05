@@ -92,7 +92,7 @@ def get_all_trials_as_arrays(
         A tuple containing the trial configs as a 2D numpy array and their corresponding
         evaluation results as a 1D numpy array.
     """
-    return tuple(
+    return (
         np.array([trial.config_array for trial in trials]),
         np.array([trial.eval_result for trial in trials]),
     )
@@ -102,8 +102,15 @@ def get_all_trials_as_arrays(
 class Average:
     """Class to compute and store the average of a series of values."""
 
-    values: list[float] | None = field(default_factory=list, init=False)
-    """List to store the values."""
+    sum: float = field(default=0.0, init=False)
+    """Sum of the values."""
+
+    count: int = field(default=0, init=False)
+    """Number of values."""
+
+    def __post_init__(self):
+        self.sum = 0.0
+        self.count = 0
 
     @property
     def _len(self) -> int:
@@ -115,13 +122,14 @@ class Average:
         return len(self.values)
 
 
-    def update(self, value: float) -> None:
+    def update(self, value: float, n: int = 1) -> None:  # noqa: D417
         """Update the list of values with a new value.
 
         Args:
             value: The new value to add.
         """
-        self.values.append(value)
+        self.sum += value * n
+        self.count += n
 
     @property
     def avg(self) -> float:
@@ -130,9 +138,9 @@ class Average:
         Returns:
             The average of the values.
         """
-        if not self.values:
+        if self.count == 0:
             return 0.0
-        return sum(self.values) / self._len
+        return self.sum / self.count
 
 
 def accuracy(
@@ -148,4 +156,4 @@ def accuracy(
     Returns:
         The accuracy as a float.
     """
-    return torch.sum(logits.round() == labels).float().mean().item()
+    return torch.sum(torch.argmax(logits, dim=1) == labels).float().mean()

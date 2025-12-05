@@ -21,3 +21,5 @@ def get_resnet_config_space(seed: int = 0) -> ConfigurationSpace:
             default_value=1e-3,
         ),
     )
+
+    return cs

@@ -23,6 +23,9 @@ from ConfigSpace.hyperparameters import (
 class GPModel:
     """Gaussian Process Surrogate Model."""
 
+    space: ConfigurationSpace
+    "The configuration space for the input parameters."
+
     seed: int = 0
     "Random seed for reproducibility."
 
@@ -34,9 +37,6 @@ class GPModel:
 
     num_restarts: int = 20
     "Number of restarts of the optimizer"
-
-    space: ConfigurationSpace
-    "The configuration space for the input parameters."
 
     def __post_init__(self):
         self._create_kernel()
