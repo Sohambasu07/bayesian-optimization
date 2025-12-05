@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
@@ -16,12 +17,23 @@ from bayesian_optimization.weighted_ei import WeightedExpectedImprovement
 if TYPE_CHECKING:
     from ConfigSpace import ConfigurationSpace
 
+
+bo_logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 @dataclass
 class BayesianOptimization:
     """Core class for Bayesian Optimization."""
 
     config_space: ConfigurationSpace
     "The configuration space for the optimization."
+
+    objective: str
+    "The objective metric name."
+
+    eval_fn: Callable
+    "The evaluation function that takes hyperparameter configurations and "
+    "returns their performance."
 
     num_iterations: int = 10
     "Number of function evaluations for Bayesian Optimization (counted including initial design)."
@@ -34,13 +46,6 @@ class BayesianOptimization:
 
     device: Literal["cpu", "cuda"] = "cpu"
     "Device to use for model training and evaluation."
-
-    objective: str
-    "The objective metric name."
-
-    eval_fn: Callable
-    "The evaluation function that takes hyperparameter configurations and "
-    "returns their performance."
 
     def __call__(
         self,
@@ -68,7 +73,7 @@ class BayesianOptimization:
                 for hp in self.config_space.values()
                 if hasattr(hp, "lower") and hasattr(hp, "upper")
             ]
-        )
+        ).T
 
         initial_points = initial_design.sample(
             n=self.initial_design_size,
@@ -77,20 +82,26 @@ class BayesianOptimization:
 
         trials: list[Trial] = []
 
+        # Evaluate Initial Design Points
+
         for i, sample in enumerate(initial_points):
             _trial = Trial._convert_to_trial(
                 trial_id=i,
                 config_space=self.config_space,
                 config_array=sample
             )
+
+            bo_logger.info(f"BO iteration {i+1}\n")
             eval_cost = self.eval_fn(
-                _trial.config,
+                hp_configs=_trial.config,
                 device=self.device,
+                show_summary=i == 0,
             )[self.objective]
             _trial._set_as_complete(eval_cost)
             trials.append(_trial)
+            print("===========================================================")
 
-        for _ in range(self.num_iterations):
+        for _ in range(self.num_iterations - self.initial_design_size):
 
             # Fit GP Model
             gp = GPModel(
@@ -112,6 +123,7 @@ class BayesianOptimization:
                 x=X,
                 y=y,
                 seed=seed,
+                bounds=cs_bounds,
             )
 
             # Evaluate new point
@@ -122,11 +134,13 @@ class BayesianOptimization:
             )
 
             # Add new trial to trials list
+            bo_logger.info(f"BO iteration {len(trials)+1}\n")
             eval_cost = self.eval_fn(
-                next_trial.config,
+                hp_configs=next_trial.config,
                 device=self.device,
             )[self.objective]
             next_trial._set_as_complete(eval_cost)
             trials.append(next_trial)
+            print("===========================================================")
 
         return trials
