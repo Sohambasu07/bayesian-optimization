@@ -88,6 +88,12 @@ class WeightedExpectedImprovement:
 
         self.gp.space.seed(seed)
 
+        # Assert 1D bounds
+        if bounds.shape[1] != 1:
+            raise NotImplementedError(
+                "Currently, only 1D optimization is supported for WEI."
+            )
+
         # For better coverage of the whole space,
         # Easy since our search space is 1D
         samples = np.linspace(
