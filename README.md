@@ -23,7 +23,9 @@ pip install -e . # For editable install
 
 ### Results
 
+All the trials are saved as a csv in `./results/bo_results.csv`
 The final HP config (optimal learning rate) can be found at `./results/best_config.yaml`
+
 
 ### Plots
 
