@@ -116,7 +116,7 @@ def plot_bo_iteration(
     figure.tight_layout()
     figure.suptitle(f"Bayesian Optimization Iteration {len(y)}", y=1.05)
 
-    plot_path = PLOTS_DIR / f"bo_iteration_{len(y)}.png"
+    plot_path = PLOTS_DIR / f"bo_iteration_{len(y)+1}.png"
     plot_path.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(plot_path, dpi=300)
     plt.close()

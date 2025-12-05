@@ -22,10 +22,7 @@ class WeightedExpectedImprovement:
     gp: GPModel
     "The Gaussian Process model used for predictions."
 
-    xi: float = 0.01
-    "Exploration-exploitation trade-off parameter."
-
-    w: float = 0.35
+    w: float = 0.5
     "Weighting factor for the weighted expected improvement."
 
     def weighted_ei(
@@ -48,11 +45,11 @@ class WeightedExpectedImprovement:
         if np.any(sigma == 0):
             return np.zeros_like(mu)
 
-        z = (y_best - mu - self.xi) / sigma
+        z = (y_best - mu) / sigma
         exploration_term = norm.pdf(z)
         exploitation_term = norm.cdf(z)
         return (
-            self.w*(y_best - mu - self.xi)*exploitation_term + (1 - self.w)*sigma*exploration_term
+            self.w*(y_best - mu)*exploitation_term + (1 - self.w)*sigma*exploration_term
         )
 
 

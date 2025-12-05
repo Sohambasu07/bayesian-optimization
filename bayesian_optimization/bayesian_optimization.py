@@ -112,7 +112,6 @@ class BayesianOptimization:
             # Define Acquisition Function
             acq_fn = WeightedExpectedImprovement(
                 gp=gp,
-                xi=0.01,
             )
 
             # Optimize Acquisition Function
