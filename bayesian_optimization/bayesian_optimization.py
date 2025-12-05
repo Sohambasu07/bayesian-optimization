@@ -58,7 +58,7 @@ class BayesianOptimization:
         Returns:
             A list of completed Trial objects.
         """
-        # Run Initial Design
+        # Create and run Initial Design
 
         initial_design = InitialDesign(
             ndims=len(list(self.config_space.values())),
@@ -100,7 +100,9 @@ class BayesianOptimization:
 
         for _ in range(self.num_iterations - self.initial_design_size):
 
-            # Fit GP Model
+            bo_logger.info(f"BO iteration {len(trials)+1}\n")
+
+            # Create GP Model
             gp = GPModel(
                 seed=seed,
                 num_restarts=self.num_restarts,
@@ -122,19 +124,19 @@ class BayesianOptimization:
                 bounds=cs_bounds,
             )
 
-            # Evaluate new point
             next_trial = Trial._convert_to_trial(
                 trial_id=len(trials),
                 config_space=self.config_space,
                 config_array=next_point,
             )
 
-            # Add new trial to trials list
-            bo_logger.info(f"BO iteration {len(trials)+1}\n")
+            # Evaluate new point
             eval_cost = self.eval_fn(
                 hp_configs=next_trial.config,
                 device=self.device,
             )
+
+            # Add new trial to trials list
             next_trial._set_as_complete(eval_cost)
             trials.append(next_trial)
             print("===========================================================")
