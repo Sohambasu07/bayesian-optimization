@@ -5,7 +5,8 @@
 ```bash
 python -m bayesian_optimization \
     --device cuda \ # Optional
-    --seed 1 \ #Optional
+    --seed 1 \ # Optional
+    --epochs 20 \ #Optional
 ```
 
 ### Installation from source
