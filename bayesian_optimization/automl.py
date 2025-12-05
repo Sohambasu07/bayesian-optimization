@@ -120,12 +120,17 @@ class AutoML:
         automl_logger.info(f"\nOptimal {hp_target}: {best_trial.config[hp_target]}")
         automl_logger.info(f"Best Validation Loss: {best_trial.eval_result}")
 
-        _df.to_csv(RESULTS_DIR / "bo_results.csv", index=False)
-
         best_hp_config_path = RESULTS_DIR / "best_config.yaml"
+        best_hp_config_path.parent.mkdir(parents=True, exist_ok=True)
+
+        _df.to_csv(RESULTS_DIR / "bo_results.csv", index=False)
 
         with best_hp_config_path.open("w") as f:
             yaml.dump(best_trial.config, f)
+
+        logging.info(
+            f"Best hyperparameter configuration saved to {best_hp_config_path.absolute().resolve()}"
+        )
 
 
 def train_and_evaluate_model(
