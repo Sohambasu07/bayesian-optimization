@@ -159,6 +159,9 @@ def train_and_evaluate_model(
         show_summary: Whether to display the model summary.
     """
     torch.manual_seed(seed)
+    if device == "cuda":
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True
     )
