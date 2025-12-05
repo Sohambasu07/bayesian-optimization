@@ -44,13 +44,6 @@ if __name__ == "__main__":
         help="Device to use for model training and evaluation.",
     )
     parser.add_argument(
-        "--objective",
-        type=str,
-        choices=["val_loss", "val_accuracy"],
-        default="val_loss",
-        help="The objective metric name.",
-    )
-    parser.add_argument(
         "--num_restarts", "-r",
         type=int,
         default=20,
@@ -62,6 +55,12 @@ if __name__ == "__main__":
         default=128,
         help="Batch size for training.",
     )
+    parser.add_argument(
+        "--epochs", "-e",
+        type=int,
+        default=10,
+        help="Number of training epochs.",
+    )
 
     args = parser.parse_args()
 
@@ -72,10 +71,10 @@ if __name__ == "__main__":
     )
 
     automl.optimize(
-        objective=args.objective,
         device=args.device,
         seed=args.seed,
         hp_target="learning_rate",
         batch_size=args.batch_size,
+        epochs=args.epochs,
         num_restarts=args.num_restarts,
     )

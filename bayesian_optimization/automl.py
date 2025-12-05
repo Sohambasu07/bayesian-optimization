@@ -72,11 +72,11 @@ class AutoML:
 
     def optimize(
         self,
-        objective: str = "val_loss",
         device: Literal["cpu", "cuda"] = "cpu",
         seed: int = 0,
         hp_target: str = "learning_rate",
         batch_size: int = 64,
+        epochs: int = 10,
         num_restarts: int = 20,
     ) -> None:
         """Run Bayesian Optimization to find the best hyperparameters."""
@@ -90,13 +90,13 @@ class AutoML:
             initial_design_size=self.initial_design_size,
             num_restarts=num_restarts,
             device=device,
-            objective=objective,
             eval_fn=partial(
                 train_and_evaluate_model,
                 train_dataset=train_dataset,
                 val_dataset=val_dataset,
                 num_classes=num_classes,
                 batch_size=batch_size,
+                epochs=epochs,
             ),
         )
 
@@ -107,7 +107,7 @@ class AutoML:
                 {
                     "trial_id": trial.trial_id,
                     **trial.config,
-                    objective: trial.eval_result,
+                    "val_loss": trial.eval_result,
                 }
                 for trial in trials
             ]
@@ -117,10 +117,8 @@ class AutoML:
         best_trial = min(trials, key=lambda t: t.eval_result)
 
         automl_logger.info(f"Trial ID: {best_trial.trial_id}")
-        automl_logger.info(f"Hyperparameters: {best_trial.config}")
-        automl_logger.info(f"{objective}: {best_trial.eval_result}")
-
         automl_logger.info(f"\nOptimal {hp_target}: {best_trial.config[hp_target]}")
+        automl_logger.info(f"Best Validation Loss: {best_trial.eval_result}")
 
         _df.to_csv(RESULTS_DIR / "bo_results.csv", index=False)
 
@@ -138,9 +136,10 @@ def train_and_evaluate_model(
     batch_size: int = 64,
     device: Literal["cpu", "cuda"] = "cpu",
     seed: int = 0,
+    epochs: int = 10,
     *,
     show_summary: bool = False,
-) -> dict[str, float]:
+) -> float:
     """Train the Resnet model using the prepared dataset.
 
     Args:
@@ -151,6 +150,7 @@ def train_and_evaluate_model(
         batch_size: Batch size for training and evaluation.
         device: The device (CPU/GPU) to run the training on.
         seed: Random seed for reproducibility.
+        epochs: Number of training epochs.
         show_summary: Whether to display the model summary.
     """
     torch.manual_seed(seed)
@@ -187,7 +187,7 @@ def train_and_evaluate_model(
 
     total_time = 0.0
 
-    for _ in range(10):
+    for _ in range(epochs):
 
         _, _, train_time = train_fn(
             model,
@@ -213,8 +213,4 @@ def train_and_evaluate_model(
         f"Total Time: {total_time:.2f} seconds"
     )
 
-    return {
-        "val_accuracy": -val_accuracy,
-        "val_loss": val_loss,
-        "val_time": total_time,
-    }
+    return val_loss

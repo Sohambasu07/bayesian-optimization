@@ -28,9 +28,6 @@ class BayesianOptimization:
     config_space: ConfigurationSpace
     "The configuration space for the optimization."
 
-    objective: str
-    "The objective metric name."
-
     eval_fn: Callable
     "The evaluation function that takes hyperparameter configurations and "
     "returns their performance."
@@ -96,7 +93,7 @@ class BayesianOptimization:
                 hp_configs=_trial.config,
                 device=self.device,
                 show_summary=i == 0,
-            )[self.objective]
+            )
             _trial._set_as_complete(eval_cost)
             trials.append(_trial)
             print("===========================================================")
@@ -138,7 +135,7 @@ class BayesianOptimization:
             eval_cost = self.eval_fn(
                 hp_configs=next_trial.config,
                 device=self.device,
-            )[self.objective]
+            )
             next_trial._set_as_complete(eval_cost)
             trials.append(next_trial)
             print("===========================================================")

@@ -26,9 +26,6 @@ class Trial:
     complete: bool = field(default=False, init=False)
     """Indicates whether the trial has been completed."""
 
-    objective: str | None = field(default=None, init=False)
-    """The objective metric name for the trial."""
-
     def _set_as_complete(
         self,
         eval_result: float,
