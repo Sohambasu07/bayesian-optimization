@@ -78,6 +78,8 @@ class AutoML:
         batch_size: int = 64,
         epochs: int = 10,
         num_restarts: int = 20,
+        *,
+        debug: bool = False,
     ) -> None:
         """Run Bayesian Optimization to find the best hyperparameters."""
         config_space = get_resnet_config_space(seed=seed)
@@ -100,7 +102,7 @@ class AutoML:
             ),
         )
 
-        trials: list[Trial] = bo(seed=seed)
+        trials: list[Trial] = bo(seed=seed, debug=debug)
 
         _df = pd.DataFrame(
             [

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -14,6 +15,9 @@ if TYPE_CHECKING:
 
     from bayesian_optimization.gp import GPModel
 
+
+wei_logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class WeightedExpectedImprovement:
@@ -60,6 +64,8 @@ class WeightedExpectedImprovement:
         bounds: np.ndarray,
         seed: int = 0,
         n_random: int = 10000,
+        *,
+        debug: bool = False,
     ) -> np.ndarray:
         """Optimize the acquisition function to find the next best point.
 
@@ -70,6 +76,7 @@ class WeightedExpectedImprovement:
                 for each dimension.
             seed: Random seed for reproducibility.
             n_random: Number of random samples to evaluate the acquisition function on.
+            debug: Debug flag to enable/disable debug logging
 
         Returns:
             The point that maximizes the acquisition function.
@@ -89,7 +96,7 @@ class WeightedExpectedImprovement:
             n_random
         )
 
-        mu, sigma = self.gp.model.predict(samples.reshape(-1, 1), return_std=True)
+        mu, sigma = self.gp.model.predict(samples, return_std=True)
         y_best = np.min(y)
 
         acq_values = self.weighted_ei(
@@ -108,5 +115,11 @@ class WeightedExpectedImprovement:
             gp_std=sigma,
             acq_fn_values=acq_values,
         )
+
+        if debug:
+            wei_logger.info(f"{self.gp.model.kernel_=}")
+            wei_logger.info(f"{self.gp.model.log_marginal_likelihood(self.gp.model.kernel_.theta)=}")
+            wei_logger.info(f"WEI at next point: {acq_values[next_idx]}")
+            wei_logger.info(f"{mu[next_idx]=}, {sigma[next_idx]=}")
 
         return samples[next_idx]

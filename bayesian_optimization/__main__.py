@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 import argparse
-import logging
 
 from bayesian_optimization.automl import AutoML
-
-main_logger = logging.getLogger(__name__)
-main_logger.setLevel(logging.INFO)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -61,6 +57,11 @@ if __name__ == "__main__":
         default=20,
         help="Number of training epochs.",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging.",
+    )
 
     args = parser.parse_args()
 
@@ -77,4 +78,5 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         epochs=args.epochs,
         num_restarts=args.num_restarts,
+        debug=args.debug,
     )

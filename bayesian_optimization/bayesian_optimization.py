@@ -47,6 +47,8 @@ class BayesianOptimization:
     def __call__(
         self,
         seed: int = 0,
+        *,
+        debug: bool = False,
     ) -> list[Trial]:
         """Run Bayesian Optimization.
 
@@ -54,6 +56,7 @@ class BayesianOptimization:
             eval_fn: The evaluation function that takes hyperparameter configurations
                 and returns their performance.
             seed: Random seed for reproducibility.
+            debug: If True, enables debug logging.
 
         Returns:
             A list of completed Trial objects.
@@ -122,6 +125,7 @@ class BayesianOptimization:
                 y=y,
                 seed=seed,
                 bounds=cs_bounds,
+                debug=debug,
             )
 
             next_trial = Trial._convert_to_trial(
