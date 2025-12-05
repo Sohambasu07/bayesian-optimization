@@ -14,21 +14,24 @@ class ResNetSmall(nn.Module):
     def __init__(
         self,
         num_classes: int,
-        input_shape: tuple[int, int, int]
+        input_shape: tuple[int, int, int],
+        min_channels: int = 32,
     ) -> None:
         """Initialize the small ResNet model."""
         super().__init__()
         self.layers = nn.ModuleList()
-        self.layers.append(nn.Conv2d(input_shape[0], 64, kernel_size=7, stride=2, padding=3))
-        self.layers.append(nn.BatchNorm2d(64))
+        self.layers.append(
+            nn.Conv2d(input_shape[0], min_channels, kernel_size=7, stride=2, padding=3)
+        )
+        self.layers.append(nn.BatchNorm2d(min_channels))
         self.layers.append(nn.ReLU())
         self.layers.append(nn.MaxPool2d(kernel_size=3, stride=2))
-        for i in range(1, 5):
+        for i in range(1, 3):
             self.layers.append(
-                ResnetBlock(64*i, 64*(i+1))
+                ResnetBlock(min_channels*i, min_channels*(i+1))
             )
         self.layers.append(nn.AdaptiveAvgPool2d((1, 1)))
-        self.fc = nn.Linear(64*5, num_classes)
+        self.fc = nn.Linear(min_channels*3, num_classes)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
