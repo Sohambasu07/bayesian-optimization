@@ -139,4 +139,4 @@ def accuracy(
     Returns:
         The accuracy as a float.
     """
-    return torch.sum(torch.argmax(logits, dim=1) == labels).float().mean()
+    return torch.sum(torch.argmax(logits, dim=1) == labels).float() / labels.size(0)
